@@ -174,7 +174,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware{
            productDataList.isEmpty ?
 
            Container(
-            child: Center(child: Text("No Prodcut Found",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),),
+            child: Center(child: Text("No Product Found",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),),
            )
 
           : SingleChildScrollView(
@@ -406,15 +406,62 @@ class HomeScreenState extends State<HomeScreen> with RouteAware{
                         
                           ),
                         ),
-             
-                    Positioned(
+
+                            Positioned(
                       top: 2,
                       right: 5,
-                      child: IconButton(onPressed: (){
-                      
+                      child: IconButton(
+                        onPressed: () async{
+                       return await showDialog(context: (context), 
+                         builder: (contex){
+                          return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)
+                          ),
+                          contentPadding: const EdgeInsets.only(left: 25,top: 5,right: 25,bottom: 5),
+                            title:const Text("Delete",style: TextStyle(fontWeight: FontWeight.w500),),
+                            content: Text("Are you sure you want to delete this product?",style: TextStyle(
+                              fontSize: 18
+                            ),),
+                            actions: [
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(2)
+                                  )
+                                  ),
+                                  onPressed: () {
+                                    productDataList.removeAt(index);
+                                    localdatabase.updateData(keyValue: 'data', dataList: productDataList);
+                                    Navigator.pop(context);
+                                  },
+                                  child:Text("YES",style: TextStyle(color: Colors.red,fontSize: 16),)
+                                ),
+                
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(2)
+                                  ),
+                                  padding: EdgeInsets.zero
+                                  ),
+                                  onPressed: (){
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("NO",style: TextStyle(color: Colors.green,fontSize: 16))
+                              
+                                ),
+                            
+                            ],
+                          );
+                        },
+                       );
                       },
                       icon:const Icon(Icons.delete,size: 30,)),
-                    )
+                    ),
+                  
+             
+                    
                     
                     ]);
                    }),
