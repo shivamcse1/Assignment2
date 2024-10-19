@@ -1,9 +1,11 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, empty_catches, use_build_context_synchronously
+import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+import 'package:assignment/presentation/user/view/home_screen.dart';
+import 'package:assignment/utils/ui_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import "package:http/http.dart" as http ;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +19,44 @@ class LoginScreenState extends State<LoginScreen> {
   TextEditingController  emailController = TextEditingController();
   TextEditingController  passwordController = TextEditingController();
   bool isTap = false;
+  bool isLoading = false;
 
+  Future<void> userLogin ({required String email , required String password}) async{
+    try{
+      EasyLoading.show(status: "Please wait..");
+      Uri uriUrl = Uri.parse("https://reqres.in/api/login");
+
+      var response = await http.post(
+       uriUrl,
+       body: {
+          "email" : email,
+          "password": password ,
+       }
+      );
+      
+      var data = jsonDecode(response.body);
+      if(response.statusCode==200){
+
+         EasyLoading.dismiss();
+         setState(() {
+           isLoading = true;
+         });
+         UiHelper.showToast(toastMsg: "Login Successful");
+        
+      } else{
+          EasyLoading.dismiss();
+          UiHelper.showToast(toastMsg: data['error']);
+          setState(() {
+             isLoading = false;
+          });
+      }
+
+    }
+    catch (e){
+      UiHelper.showToast(toastMsg: '$e');
+    }
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,11 +177,28 @@ class LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(15)
                     )
                   ),
-                  onPressed: (){
-                  //  Navigator.push(context, MaterialPageRoute(builder: (context){
-                  //   return const ForgotPasswordScreen();
-                  // }));
-                  },
+                  onPressed: () async{
+
+                    if(emailController.text.isEmpty || passwordController.text.isEmpty){
+                      
+                      UiHelper.showToast(toastMsg: "Please provide value in empty field");
+                    }
+                    else{
+
+                      await userLogin(
+                      email: emailController.text.trim(), 
+                      password:passwordController.text.trim());
+
+                      if(isLoading==true) {
+                          Navigator.pushAndRemoveUntil(context,   MaterialPageRoute(builder: (context){
+                          return const HomeScreen();
+                            }), 
+                         (route) => false
+                         );
+                       }
+                      }  
+
+                    },
                   child:Text("Login",
                   style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),) 
                  ,),
@@ -175,34 +231,29 @@ class LoginScreenState extends State<LoginScreen> {
               ],
             ),
 
-             InkWell(
-              onTap: (){
-
-              },
-               child: Container(
-                margin: EdgeInsets.only(top:20),
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(15)
-                  ),
-                  child: Row(
-                    children: [
-               
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                        child: Image.asset("assets/images/google_ic.png",height: 28,),
-                      ),
-               
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text("Login with Google",),
-                      )
-                    ],
-                  ),
-                  
+             Container(
+              margin: EdgeInsets.only(top:20),
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(15)
                 ),
-             ),
+                child: Row(
+                  children: [
+             
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                      child: Image.asset("assets/images/google_ic.png",height: 28,),
+                    ),
+             
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Text("Login with Google",),
+                    )
+                  ],
+                ),
+                
+              ),
              
              SizedBox(height: 20,),
 
